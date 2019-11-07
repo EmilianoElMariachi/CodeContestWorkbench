@@ -53,16 +53,15 @@ function runTest(srcCodeFilePath, inputDataFilePath, outputDataFilePath) {
 
     let expectedLineIndex = -1;
 
-    console.log = function (msg) {
+    console.log = function (actualLine) {
         logOriginal.apply(console, arguments);
-
         if (!expectedLines) {
             return
         }
 
         const expectedLine = expectedLines[++expectedLineIndex];
-        if (expectedLine !== msg.toString()) {
-            throw "Expected \"" + expectedLine + "\", but was \"" + msg + "\" (line " + (expectedLineIndex + 1) + ").";
+        if (expectedLine !== actualLine.toString()) {
+            throw "Found:\"" + expectedLine + "\" found\n\"" + actualLine + "\" expected (line " + (expectedLineIndex + 1) + ").";
         }
     };
 
