@@ -52,6 +52,7 @@ module.exports = {
     logErrorLine: function (message) {
         this.logError(message + "\n");
     },
+
     logWarning: function (message) {
         this.log(message, colors.FgMagenta);
     },
@@ -72,5 +73,4 @@ module.exports = {
     logSuccessLine: function (message) {
         this.logSuccess(message + "\n");
     },
-
 };
