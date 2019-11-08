@@ -13,5 +13,6 @@ readline_object.on("close", ContestResponse);
 
 
 function ContestResponse() {
+    console.log(input[0]*3)
     //implement your code here using input array
 }
