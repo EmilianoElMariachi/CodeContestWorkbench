@@ -61,7 +61,7 @@ function runTest(srcCodeFilePath, inputDataFilePath, outputDataFilePath) {
 
         const expectedLine = expectedLines[++expectedLineIndex];
         if (expectedLine !== actualLine.toString()) {
-            throw "Found:\"" + expectedLine + "\" found\n\"" + actualLine + "\" expected (line " + (expectedLineIndex + 1) + ").";
+            throw "\"" + actualLine + "\" found,\n\"" + expectedLine + "\" expected (line " + (expectedLineIndex + 1) + ").";
         }
     };
 
