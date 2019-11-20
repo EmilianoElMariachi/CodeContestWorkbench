@@ -1,0 +1,15 @@
+x=readline
+n=x()
+p=[]
+for(i=0;i<n;i++){
+l=x()
+if(l[0]=="A")
+r=l
+else
+p.push(l)
+}
+while(p.length>0)
+for(s=0;s<p.length;s++)
+if(p[s][0]==r[r.length-1])
+r+=p.splice(s,1)[0].substring(1)
+print(r)
