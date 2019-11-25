@@ -1,7 +1,9 @@
-const readline = require('readline');
 const fs = require('fs');
 const path = require('path');
-const logger = require('./logger');
+const logger = require('../../shared/logger');
+const ioHelper = require('../../shared/ioHelper');
+const ResultsAnalyzer = require('../../shared/ResultsAnalyzer');
+
 
 /**
  * @type {null|Function}
@@ -39,36 +41,22 @@ global.readline_object = {
     }
 };
 
-/**
- * @param filePath
- * @returns {Promise<string[]>}
- */
-async function readFileLines(filePath) {
-    return new Promise(resolve => {
-        const lines = [];
-        let stream = fs.createReadStream(filePath);
-        let rl = readline.createInterface({input: stream});
-
-        rl.on('line', function (line) {
-            lines.push(line);
-        });
-
-        rl.on('close', async function () {
-            resolve(lines);
-        });
-    });
-}
-
 async function runTestCase(inputFile, outputFile, codeFile, enableOutputAnalysis = true) {
     return new Promise(async resolve => {
-        logger.logInfoLine("===============================================");
-        logger.logInfoLine("> TEST \"" + path.parse(inputFile).base + "\"/\"" + path.parse(outputFile).base + "\"");
-        logger.logInfoLine("===============================================");
 
         if (!fs.statSync(inputFile).isFile()) {
             logger.logErrorLine("Input file \"" + inputFile + "\" not found!");
             return;
         }
+
+        // Display test header
+        const inputDataFileName = path.basename(inputFile);
+        const outputDataFileName = outputFile ? path.basename(outputFile) : "";
+        const files = outputFile ? "\"" + inputDataFileName + "/" + outputDataFileName + "\"" : "\"" + inputDataFileName + "\"";
+        logger.logInfoLine("===================" + "=".repeat(files.length) + "=====");
+        logger.logInfoLine("===>  Running test " + files + " <===");
+        logger.logInfoLine("===================" + "=".repeat(files.length) + "=====");
+
 
         onInputLineReadCb = null;
         onAllInputLinesReadCb = null;
@@ -85,30 +73,31 @@ async function runTestCase(inputFile, outputFile, codeFile, enableOutputAnalysis
         }
 
         // Reads all input and send them to code
-        const inputLines = await readFileLines(inputFile);
+        const inputLines = await ioHelper.readFileLinesAsync(inputFile);
         for (let i in inputLines) {
             onInputLineReadCb(inputLines[i]);
         }
 
-        let outputsAnalyzer;
+        let resultsAnalyzer;
         if (!enableOutputAnalysis) {
-            outputsAnalyzer = null;
+            resultsAnalyzer = null;
             consoleHook.onLog = logger.logLine.bind(logger);
         } else {
             if (!fs.existsSync(outputFile)) {
                 throw "Output file \"" + outputFile + "\" not found, test will be run without expectations.";
             }
 
-            let expectedOutputs = await readFileLines(outputFile);
-            outputsAnalyzer = new OutputsAnalyzer(expectedOutputs);
-            consoleHook.onLog = outputsAnalyzer.onNewOutput.bind(outputsAnalyzer);
+            let expectedOutputs = await ioHelper.readFileLinesAsync(outputFile);
+            resultsAnalyzer = new ResultsAnalyzer(expectedOutputs, logger);
+            consoleHook.onLog = resultsAnalyzer.onNewOutput.bind(resultsAnalyzer);
         }
 
         // Runs the test
         onAllInputLinesReadCb();
 
-        if (outputsAnalyzer) {
-            if (outputsAnalyzer.isTestKO()) {
+        if (resultsAnalyzer) {
+            resultsAnalyzer.onEnd();
+            if (resultsAnalyzer.isTestKO()) {
                 logger.logErrorLine("> TEST KO");
                 logger.logErrorLine("");
             } else {
@@ -120,39 +109,6 @@ async function runTestCase(inputFile, outputFile, codeFile, enableOutputAnalysis
         // Notify end of test
         resolve();
     });
-}
-
-function OutputsAnalyzer(expectedOutputs) {
-
-    let _testIsKO = false;
-
-    const _actualOutputs = [];
-
-    /**
-     * @param {string} newOutput
-     */
-    this.onNewOutput = function (newOutput) {
-        _actualOutputs.push(newOutput);
-
-        logger.log(newOutput);
-
-        if (_actualOutputs.length > expectedOutputs.length) {
-            logger.logErrorLine(" Extra Line");
-            _testIsKO = true;
-        } else {
-            const expectedOutput = expectedOutputs[_actualOutputs.length - 1];
-            if (expectedOutput !== newOutput) {
-                logger.logErrorLine(" KO (\"" + expectedOutput + "\" was expected)");
-                _testIsKO = true;
-            } else {
-                logger.logSuccessLine(" OK")
-            }
-        }
-    };
-
-    this.isTestKO = function () {
-        return _testIsKO;
-    }
 }
 
 function requireUncached(module) {
