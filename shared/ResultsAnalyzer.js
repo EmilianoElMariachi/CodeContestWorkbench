@@ -1,47 +1,57 @@
-/**
- * @param {string[]} expectedOutputs
- * @param {Logger} logger
- * @constructor
- */
-function ResultsAnalyzer(expectedOutputs, logger) {
-    let _testIsKO = false;
+class ResultsAnalyzer {
 
-    const _actualOutputs = [];
+    _testIsKO = false;
+    _actualOutputs = [];
 
     /**
+     * @type {Logger}
+     */
+    _logger;
+
+    /**
+     * @param {string[]} expectedOutputs
+     * @param {Logger} logger
+     */
+    constructor(expectedOutputs, logger) {
+        this._expectedOutputs = expectedOutputs;
+        this._logger = logger;
+    }
+
+    /**
+     * Adds an actual output which is to be analyzed
      * @param {string} newOutput
      */
-    this.onOutput = function onOutput(newOutput) {
-        _actualOutputs.push(newOutput);
+    onOutput(newOutput) {
+        this._actualOutputs.push(newOutput);
 
-        logger.log(newOutput);
+        this._logger.log(newOutput);
 
-        if (_actualOutputs.length > expectedOutputs.length) {
-            logger.logErrorLine(" Extra Line");
-            _testIsKO = true;
+        if (this._actualOutputs.length > this._expectedOutputs.length) {
+            this._logger.logErrorLine(" Extra Line");
+            this._testIsKO = true;
         } else {
-            const expectedOutput = expectedOutputs[_actualOutputs.length - 1];
+            const expectedOutput = this._expectedOutputs[this._actualOutputs.length - 1];
             if (expectedOutput !== newOutput) {
-                logger.logErrorLine(" KO (\"" + expectedOutput + "\" was expected)");
-                _testIsKO = true;
+                this._logger.logErrorLine(" KO (\"" + expectedOutput + "\" was expected)");
+                this._testIsKO = true;
             } else {
-                logger.logSuccessLine(" OK")
+                this._logger.logSuccessLine(" OK")
             }
         }
     };
 
-    this.onEnd = function onEnd() {
-        const nbMissingOutputs = Math.max(expectedOutputs.length - _actualOutputs.length, 0);
-        for (let i = expectedOutputs.length - nbMissingOutputs; i < expectedOutputs.length; i++) {
-            logger.logErrorLine(expectedOutputs[i] + " Line Missing");
+    onEnd() {
+        const nbMissingOutputs = Math.max(this._expectedOutputs.length - this._actualOutputs.length, 0);
+        for (let i = this._expectedOutputs.length - nbMissingOutputs; i < this._expectedOutputs.length; i++) {
+            this._logger.logErrorLine(this._expectedOutputs[i] + " Line Missing");
         }
 
         if (nbMissingOutputs > 0)
-            _testIsKO = true;
+            this._testIsKO = true;
     };
 
-    this.isTestKO = function () {
-        return _testIsKO;
+    isTestKO() {
+        return this._testIsKO;
     };
 }
 

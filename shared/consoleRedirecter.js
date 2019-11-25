@@ -1,22 +1,25 @@
-function ConsoleRedirecter() {
-    const _self = this;
+// Backup original log function
+const _logOri = console.log;
 
-    // Backup original log function
-    const _logOri = console.log;
+class ConsoleRedirecter {
 
-    this.redirectLog = function redirectLog(logCallback) {
+    /**
+     * Redirects "console.log" function to the specified callback.
+     * @param {Function} logCallback
+     */
+    redirectLog(logCallback) {
         console.log = function consoleLogOverride() {
             const message = Array.from(arguments).map(value => value.toString()).join(" ");
             logCallback(message);
         };
     };
 
-    this.restoreLog = function restoreLog() {
+    /**
+     * Restores the original "console.log" function implementation.
+     */
+    restoreLog() {
         console.log = _logOri;
     };
-
-
 }
-
 
 module.exports = new ConsoleRedirecter();

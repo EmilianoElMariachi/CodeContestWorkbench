@@ -1,23 +1,21 @@
 const TestRunnerBase = require("./TestRunnerBase");
 
-function CGTestRunner() {
+class CGTestRunner extends TestRunnerBase {
 
-}
+    _setupInputReadingEnvironment(inputLines) {
 
-CGTestRunner.prototype = Object.create(TestRunnerBase.prototype);
+        // Expose the global function 'print' as a shortcut for 'console.log'
+        global.print = function () {
+            console.log.apply(console, arguments);
+        };
 
-CGTestRunner.prototype._setupInputReadingEnvironment = function _setupInputReadingEnvironment(inputLines) {
-
-    // Expose the 'print' function as a shortcut for 'console.log'
-    global.print = function () {
-        console.log.apply(console, arguments);
+        // Expose the global function 'readline'
+        let readLineIndex = -1;
+        global.readline = function readline() {
+            return inputLines[++readLineIndex];
+        }
     };
 
-    let readLineIndex = -1;
-    global.readline = function readline() {
-        return inputLines[++readLineIndex];
-    }
-
-};
+}
 
 module.exports = CGTestRunner;

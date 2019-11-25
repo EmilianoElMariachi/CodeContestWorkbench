@@ -1,18 +1,6 @@
-const path = require('path');
-const back = require('./libs/testRunner.js');
+const testRunner = new (require("./../shared/TCTestRunner"));
 
-const fileName = "input1.txt";
-const enableOutputAnalysis = true;
+let inputDataFilePath = "data/input1.txt";
+let outputDataFilePath = "data/output1.txt";
 
-const dataDir = path.join(__dirname, "data");
-const filePath = path.join(dataDir, fileName);
-
-const match = fileName.match(/^input(\d+\..*)$/);
-if (match) {
-    const expectedOutputFileName = "output" + match[1];
-    const expectedOutputFilePath = path.join(dataDir, expectedOutputFileName);
-
-    back.runTestCase(filePath, expectedOutputFilePath, path.join(__dirname, "code.js"), enableOutputAnalysis);
-}
-
-
+testRunner.runOne("./code.js", inputDataFilePath, outputDataFilePath);

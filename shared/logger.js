@@ -31,36 +31,37 @@ const Colors = {
     BgWhite: "47",
 };
 
-/**
- * Colorizes a message
- * @param {*} message
- * @param {Colors} [color]
- * @returns {string}
- */
-function colorizeMessage(message, color) {
-    if (color === undefined || color === null) {
-        color = Colors.Reset;
-    }
-
-    let colorizedMessage = "\033[" + color + "m" + message + "\033[0m";
-    return colorizedMessage;
-}
-
-function Logger() {
+class Logger {
 
     /**
-     * @Type {Colors}
-     * @readonly
+     * @return {{FgYellow: (Colors|string), BgGreen: (Colors|string), BgCyan: (Colors|string), Reverse: (Colors|string), FgBlue: (Colors|string), Blink: (Colors|string), Dim: (Colors|string), BgBlack: (Colors|string), BgYellow: (Colors|string), Bright: (Colors|string), FgBlack: (Colors|string), BgBlue: (Colors|string), FgGreen: (Colors|string), FgMagenta: (Colors|string), Hidden: (Colors|string), Underscore: (Colors|string), FgRed: (Colors|string), FgCyan: (Colors|string), FgWhite: (Colors|string), BgMagenta: (Colors|string), Reset: (Colors|string), BgWhite: (Colors|string), BgRed: (Colors|string)}}
      */
-    Object.defineProperty(this, "Colors", {writable: false, value: Colors});
+    get Colors() {
+        return Colors;
+    }
+
+    /**
+     * Colorizes a message
+     * @param {*} message
+     * @param {Colors} [color]
+     * @returns {string}
+     */
+    static colorizeMessage(message, color) {
+        if (color === undefined || color === null) {
+            color = Colors.Reset;
+        }
+
+        let colorizedMessage = "\u001b[" + color + "m" + message + "\u001b[0m";
+        return colorizedMessage;
+    }
 
     /**
      * Logs a message with the given color
      * @param {*} message
      * @param {Colors} [color]
      */
-    this.log = function log(message, color) {
-        let string = colorizeMessage(message, color);
+    log(message, color) {
+        let string = Logger.colorizeMessage(message, color);
         process.stdout.write(string)
     };
 
@@ -69,37 +70,39 @@ function Logger() {
      * @param {*} message
      * @param {Colors} color
      */
-    this.logLine = function logLine(message, color) {
+    logLine(message, color) {
         this.log(message + "\n", color)
     };
 
-    this.logError = function logError(message) {
+    logError(message) {
         this.log(message, Colors.FgRed);
     };
 
-    this.logErrorLine = function logErrorLine(message) {
+    logErrorLine(message) {
         this.logError(message + "\n");
     };
 
-    this.logWarning = function logWarning(message) {
+    logWarning(message) {
         this.log(message, Colors.FgMagenta);
     };
 
-    this.logWarningLine = function logWarningLine(message) {
+    logWarningLine(message) {
         this.logWarning(message + "\n");
     };
 
-    this.logInfo = function logInfo(message) {
+    logInfo(message) {
         this.log(message, Colors.FgBlue);
     };
-    this.logInfoLine = function logInfoLine(message) {
+
+    logInfoLine(message) {
         this.logInfo(message + "\n");
     };
 
-    this.logSuccess = function logSuccess(message) {
+    logSuccess(message) {
         this.log(message, Colors.FgGreen);
     };
-    this.logSuccessLine = function logSuccessLine(message) {
+
+    logSuccessLine(message) {
         this.logSuccess(message + "\n");
     };
 }
