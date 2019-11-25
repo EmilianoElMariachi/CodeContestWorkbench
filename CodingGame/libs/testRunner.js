@@ -1,30 +1,21 @@
 const fs = require("fs");
 const path = require("path");
-
-// Hook console output
-const logOriginal = console.log;
+const ioHelper = require('../../shared/ioHelper');
+const ResultsAnalyzer = require('../../shared/ResultsAnalyzer');
+const logger = require('../../shared/logger');
+const consoleRedirecter = require('../../shared/ConsoleRedirecter');
 
 // Expose the 'print' function as a shortcut for 'console.log'
 global.print = function () {
     console.log.apply(console, arguments);
 };
 
-function readFileLines(filePath) {
-    return fs.readFileSync(filePath, "utf-8").replace(/\r/g, "").split("\n");
-}
-
-function guessOutputDataFilePath(inputDataFilePath) {
-    const inputFileName = path.basename(inputDataFilePath);
-    const match = inputFileName.match(/[^\d]*(\d*\..*)$/);
-
-    if (!match) {
-        return null;
-    }
-
-    const expectedOutputFilePath = path.join(path.dirname(inputDataFilePath), "output" + match[1]);
-    return expectedOutputFilePath;
-}
-
+/**
+ *
+ * @param {string} srcCodeFilePath
+ * @param {string} inputDataFilePath
+ * @param {string} [outputDataFilePath]
+ */
 function runTest(srcCodeFilePath, inputDataFilePath, outputDataFilePath) {
     // Make sure source code file path exists
     const srcCodeAbsFilePath = path.resolve(srcCodeFilePath);
@@ -35,38 +26,44 @@ function runTest(srcCodeFilePath, inputDataFilePath, outputDataFilePath) {
     if (!fs.existsSync(inputDataFilePath))
         throw "Input data file \"" + inputDataFilePath + "\" not found.";
 
-    const inputLines = readFileLines(inputDataFilePath);
-    // Declare the 'readline' function used by the code to get the input data
-
+    // Read the expected output lines (if a file is specified)
     let currentLineIndex = 0;
+    let inputLines = ioHelper.readFileLines(inputDataFilePath);
+
+    // Declare the 'readline' function used by the code to get the input data
     global.readline = function readline() {
         return inputLines[currentLineIndex++];
     };
 
-    // Read the expected output lines (if a file is specified)
-    let expectedLines = null;
+    // If output file is specified, activates the results analyzer
+    /**
+     * @type {ResultsAnalyzer|null}
+     */
+    let resultsAnalyzer = null;
     if (outputDataFilePath) {
         if (!fs.existsSync(outputDataFilePath))
             throw "Output data file \"" + outputDataFilePath + "\" not found.";
-        expectedLines = readFileLines(outputDataFilePath);
+        resultsAnalyzer = new ResultsAnalyzer(ioHelper.readFileLines(outputDataFilePath), logger);
     }
 
-    let expectedLineIndex = -1;
-
-    console.log = function (actualLine) {
-        logOriginal.apply(console, arguments);
-        if (!expectedLines) {
-            return
-        }
-
-        const expectedLine = expectedLines[++expectedLineIndex];
-        if (expectedLine !== actualLine.toString()) {
-            throw "\"" + actualLine + "\" found,\n\"" + expectedLine + "\" expected (line " + (expectedLineIndex + 1) + ").";
-        }
-    };
+    // Hook messages logged by the code via "console.log" or "print"
+    consoleRedirecter.redirectLog(function onConsoleLog(msg) {
+        if (resultsAnalyzer)
+            resultsAnalyzer.onInput(msg);
+        else
+            logger.log(msg);
+    });
 
     try {
-        logOriginal("===>  Running test \"" + path.basename(inputDataFilePath) + "\" <===")
+
+
+        // Display test header
+        const inputDataFileName = path.basename(inputDataFilePath);
+        const outputDataFileName = outputDataFilePath ? path.basename(outputDataFilePath) : "";
+        const files = outputDataFilePath ? "\"" + inputDataFileName + "/" + outputDataFileName + "\"" : "\"" + inputDataFileName + "\"";
+        logger.logInfoLine("===================" + "=".repeat(files.length) + "=====");
+        logger.logInfoLine("===>  Running test " + files + " <===");
+        logger.logInfoLine("===================" + "=".repeat(files.length) + "=====");
 
         /*============================*/
         /*=== RUNS THE SOURCE CODE ===*/
@@ -74,9 +71,19 @@ function runTest(srcCodeFilePath, inputDataFilePath, outputDataFilePath) {
         /*=== RUNS THE SOURCE CODE ===*/
         /*============================*/
 
+        if (resultsAnalyzer) {
+            resultsAnalyzer.onEnd();
+
+            if (resultsAnalyzer.isTestKO()) {
+                logger.logErrorLine("> Test failed.");
+            } else {
+                logger.logSuccessLine("> Test passed.");
+            }
+        }
+
     } finally {
         delete require.cache[srcCodeAbsFilePath];
-        console.log = logOriginal;
+        consoleRedirecter.restoreLog();
     }
 }
 
@@ -85,7 +92,7 @@ function runAllTests(srcCodeFilePath, inputDataDir) {
         const match = fileName.match(/^input(\d+\..*)$/);
         if (match) {
             const inputDataFilePath = path.join(inputDataDir, fileName);
-            let outputDataFilePath = guessOutputDataFilePath(inputDataFilePath);
+            let outputDataFilePath = ioHelper.guessOutputDataFilePath(inputDataFilePath);
             if (!fs.existsSync(outputDataFilePath))
                 outputDataFilePath = null;
             runTest(srcCodeFilePath, inputDataFilePath, outputDataFilePath);
