@@ -11,7 +11,7 @@ function ResultsAnalyzer(expectedOutputs, logger) {
     /**
      * @param {string} newOutput
      */
-    this.onInput = function onInput(newOutput) {
+    this.onOutput = function onOutput(newOutput) {
         _actualOutputs.push(newOutput);
 
         logger.log(newOutput);

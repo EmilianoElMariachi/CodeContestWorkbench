@@ -1,5 +1,6 @@
-const testRunner = require("./libs/testRunner");
+const CGTestRunner = require("./../shared/CGTestRunner");
 
 const dataDir = "./data";
 
-testRunner.runAllTests("./code.js", dataDir);
+let cgTestRunner = new CGTestRunner();
+cgTestRunner.runAll("./code.js",dataDir);
