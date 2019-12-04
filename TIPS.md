@@ -1,12 +1,38 @@
+## String
+
 ### Convert a string to number (the Unary operator)
 
-+"5647" => 5647
+    +"5647" => 5647
+    +"0xFF" => 255
+    +"0b101" => 5
+    +null => 0
+    +"" => NaN
 
-+"0xFF" => 255
+### Iterate over string chars
 
-+"0b101" => 5
+    for(c of "abcdef") {
+        console.log(c)
+    }
 
-+null => 0
+### Reverse a string
 
-+"" => NaN
+    //Case 1
+    r="MyString".split("").reverse().join(""); // returns "gnirtSyM"
+    
+    //Case 2
+    r="";for(c of "MyString")r=c+r 
 
+## Array
+
+### Make array from another
+
+    [{p1:5}, {p1:10}, {p1:15}].map((e, i)=> i+":" + e.p1); // returns ["0:5", "1:10", "2:15"]
+    
+### Accumulate
+
+    [3 , 5 , 2].reduce((a, e, i, arr) => a+=e, 0); // returns 10
+    // where 
+    //  a  : accumulator
+    //  e  : array element
+    //  i  : element index
+    //  arr: the array   
