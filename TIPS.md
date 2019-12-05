@@ -22,6 +22,13 @@
     //Case 2
     r="";for(c of "MyString")r=c+r 
 
+
+## Char to unicode number
+    "A".charCodeAt(0);      // Returns 65
+
+## Unicode number to char
+    String.fromCharCode(65) // Return "A"
+
 ## Array
 
 ### Make array from another

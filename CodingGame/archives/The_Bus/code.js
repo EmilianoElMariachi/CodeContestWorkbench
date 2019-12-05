@@ -3,23 +3,31 @@
  * the standard input according to the problem statement.
  **/
 
-const N = parseInt(readline());
+const nbBusStops = parseInt(readline());
 const inputs = readline().split(' ');
-let stops=[]
-for (let i = 0; i < N; i++) {
-    let nbPersEntering=parseInt(inputs[i]);
-    stops.push(nbPersEntering);
+
+let personId = 0;
+const personIds = {};
+
+for (let busStopIndex = 0; busStopIndex < nbBusStops; busStopIndex++) {
+    let nbPersEnteringAtBusStop = parseInt(inputs[busStopIndex]);
+
+    for (let j = 0; j < nbPersEnteringAtBusStop; j++) {
+        personIds[personId++] = busStopIndex;
+    }
 }
-let nbStayPerPers=readline().split(" ");
 
+let nbStayPerPersId = readline().split(" ").map(e => parseInt(e));
 
-stops.forEach((nbPersEntering, stopIndex) => {
-
-
+let nbPersAtTerminus = 0;
+nbStayPerPersId.forEach((nbStay, persId) => {
+    const enterAtStop = personIds[persId];
+    if (enterAtStop + nbStay >= nbBusStops) {
+        nbPersAtTerminus++;
+    }
 });
-
 
 // Write an action using console.log()
 // To debug: console.error('Debug messages...');
 
-console.log("To be finished");
+console.log(nbPersAtTerminus);
