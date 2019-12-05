@@ -76,30 +76,20 @@ class TestRunnerBase {
      */
     runAll(srcCodeFilePath, inputDataDir) {
         fs.readdirSync(inputDataDir).forEach((fileName) => {
-            const match = fileName.match(/^input(\d+\..*)$/);
+            const match = fileName.match(/^input(.*)$/);
             if (match) {
-                const inputDataFilePath = path.join(inputDataDir, fileName);
-                let outputDataFilePath = this._guessOutputDataFilePath(inputDataFilePath);
+                const expectedFileName = "output" + match[1];
+
+                let outputDataFilePath = path.join(inputDataDir, expectedFileName);
                 if (!fs.existsSync(outputDataFilePath))
                     outputDataFilePath = null;
+
+                const inputDataFilePath = path.join(inputDataDir, fileName);
                 this.runOne(srcCodeFilePath, inputDataFilePath, outputDataFilePath);
             }
         });
     };
 
-    /**
-     * @param {string} inputDataFilePath
-     * @returns {null|string}
-     */
-    _guessOutputDataFilePath(inputDataFilePath) {
-        const inputFileName = path.basename(inputDataFilePath);
-        const match = inputFileName.match(/[^\d]*(\d*\..*)$/);
-
-        if (!match) {
-            return null;
-        }
-        return path.join(path.dirname(inputDataFilePath), "output" + match[1]);
-    }
 
     _requireForce(module) {
         delete require.cache[require.resolve(module)];
