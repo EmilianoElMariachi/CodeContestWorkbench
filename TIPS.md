@@ -29,6 +29,15 @@
 ## Unicode number to char
     String.fromCharCode(65) // Return "A"
 
+## ASCII codes good to know
+    " " =>  32
+    "0" =>  48
+    "9" =>  57
+    "A" =>  65
+    "Z" =>  90
+    "a" =>  97
+    "z" => 122
+
 ## Array
 
 ### Make array from another
