@@ -2,38 +2,26 @@ const [tx, ty] = readline().split(" ").map(value => parseFloat(value));
 
 let nbTriangles = parseInt(readline());
 
+function isPointInTriangle(p, p0, p1, p2) {
+    // Taken from https://stackoverflow.com/a/20861130/4977176
+    const s = p0.Y * p2.X - p0.X * p2.Y + (p2.Y - p0.Y) * p.X + (p0.X - p2.X) * p.Y;
+    const t = p0.X * p1.Y - p0.Y * p1.X + (p0.Y - p1.Y) * p.X + (p1.X - p0.X) * p.Y;
+
+    if ((s < 0) != (t < 0))
+        return false;
+
+    const A = -p1.Y * p2.X + p0.Y * (p2.X - p1.X) + p0.X * (p1.Y - p2.Y) + p1.X * p2.Y;
+
+    return A < 0 ?
+        (s <= 0 && s + t >= A) :
+        (s >= 0 && s + t <= A);
+}
 
 while (nbTriangles--) {
     const [x1, y1, x2, y2, x3, y3] = readline().split(" ").map(value => parseFloat(value))
 
-    const eq1 = getEq(x1, y1, x2, y2);
-    const eq2 = getEq(x2, y2, x3, y3);
-    const eq3 = getEq(x3, y3, x1, y1);
-
-    const d1 = y3 > eq1(x3) ? 1 : -1;
-    const d2 = y1 > eq2(x1) ? 1 : -1;
-    const d3 = y2 > eq3(x2) ? 1 : -1;
-
-    let b1 = ty * d1 >= eq1(tx) * d1;
-    let b2 = ty * d2 >= eq2(tx) * d2;
-    let b3 = ty * d3 >= eq3(tx) * d3;
-    const r = b1 && b2 && b3
-    if (r)
+    if (isPointInTriangle({X: tx, Y: ty}, {X: x1, Y: y1}, {X: x2, Y: y2}, {X: x3, Y: y3}))
         print("inside")
     else
         print("outside")
-}
-
-
-function getEq(x1, y1, x2, y2) {
-    const a = (y2 - y1) / (x2 - x1);
-    const b = y1 - a * x1;
-    const f = function (x) {
-        return a * x + b;
-    }
-
-    f.a = a;
-    f.b = b;
-
-    return f;
 }
