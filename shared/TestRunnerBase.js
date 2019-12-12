@@ -75,22 +75,41 @@ class TestRunnerBase {
      * @param {string} inputDataDir
      */
     runAll(srcCodeFilePath, inputDataDir) {
+
+
+        const testCasesFound = [];
+        // Look for input/output files
         fs.readdirSync(inputDataDir).forEach((fileName) => {
-            const match = fileName.match(/^input(.*)$/);
+            const match = fileName.match(/^(.*)input(.*)$/);
             if (match) {
-                const expectedFileName = "output" + match[1];
+                const expectedFileName = match[1] + "output" + match[2];
 
                 let outputDataFilePath = path.join(inputDataDir, expectedFileName);
                 if (!fs.existsSync(outputDataFilePath))
                     outputDataFilePath = null;
 
-                const inputDataFilePath = path.join(inputDataDir, fileName);
-                this.runOne(srcCodeFilePath, inputDataFilePath, outputDataFilePath);
+                testCasesFound.push({
+                    inputDataFilePath: path.join(inputDataDir, fileName),
+                    outputDataFilePath: outputDataFilePath
+                });
             }
         });
+
+        if (testCasesFound.length == 0)
+            logger.logWarningLine("No test case found!");
+
+        // Run all test cases
+        testCasesFound.forEach(testCase => {
+            this.runOne(srcCodeFilePath, testCase.inputDataFilePath, testCase.outputDataFilePath);
+        })
     };
 
-
+    /**
+     * Force the loading of a node module even if it was previously loaded
+     * @param {string} module
+     * @returns {*}
+     * @private
+     */
     _requireForce(module) {
         delete require.cache[require.resolve(module)];
         return require(module)
