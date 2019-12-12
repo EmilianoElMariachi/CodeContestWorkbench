@@ -1,4 +1,4 @@
-const heights = readline().split(" ").map(value => parseInt(value));
+const heights = readline().split(" ").map(value => parseFloat(value));
 
 function computeLiters(heights) {
 
@@ -13,19 +13,15 @@ function computeLiters(heights) {
 
 
     let heightRefIndex = 0;
-    let heightRef = heights[heightRefIndex];
     let i = heightRefIndex;
     let result = 0;
     while (++i < heights.length) {
 
-        const heightTmp = heights[i];
-        if (heightTmp >= heightRef) {
+        if (heights[i] >= heights[heightRefIndex] || (heightRefIndex < heights.length - 1 && heights[i] > heights[heightRefIndex + 1]) && i !== heightRefIndex + 1) {
             result += computeLitersInRange(heightRefIndex, i);
-            heightRef = heightTmp;
             heightRefIndex = i;
         } else if (i >= (heights.length - 1)) {
             heightRefIndex++;
-            heightRef = heights[heightRefIndex];
             i = heightRefIndex;
         }
     }
