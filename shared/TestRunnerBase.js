@@ -69,16 +69,73 @@ class TestRunnerBase {
     };
 
     /**
+     * @typedef TestCase
+     * @property {string} inputDataFilePath
+     * @property {string|null|undefined} outputDataFilePath
+     */
+
+    /**
+     * @typedef ExplicitTestCase
+     * @property {string} inputFileName
+     * @property {string|null|undefined} outputFileName
+     */
+
+    /**
      * Run all tests found in the specified directory.
      *
-     * @param {string} srcCodeFilePath
-     * @param {string} inputDataDir
+     * @param {string} testDir
+     * @param {[ExplicitTestCase]} [explicitTestCases]
      */
-    runAll(srcCodeFilePath, inputDataDir) {
+    runAll(testDir, explicitTestCases) {
+        const srcCodeFilePath = path.join(testDir, "code.js");
+        const inputDataDir = path.join(testDir, "data");
 
+        const testCases = explicitTestCases ?
+            this._toFullPathTestCases(inputDataDir, explicitTestCases) :
+            this._findTestCasesInTestDir(inputDataDir);
 
+        // Run all test cases
+        testCases.forEach(testCase => {
+            this.runOne(srcCodeFilePath, testCase.inputDataFilePath, testCase.outputDataFilePath);
+        })
+    };
+
+    /**
+     * @param {string} inputDataDir
+     * @param {[ExplicitTestCase]} explicitTestCases
+     * @return {[TestCase]}
+     * @private
+     */
+    _toFullPathTestCases(inputDataDir, explicitTestCases) {
+        let testCases = explicitTestCases.map(explicitTestCase => {
+            const inputDataFilePath = path.join(inputDataDir, explicitTestCase.inputFileName);
+            if (!fs.existsSync(inputDataFilePath))
+                throw "Test case input file \"" + inputDataFilePath + "\" not found.";
+
+            const outputDataFilePath = explicitTestCase.outputFileName ? path.join(inputDataDir, explicitTestCase.outputFileName) : null;
+            if (outputDataFilePath && !fs.existsSync(outputDataFilePath))
+                throw "Test case output file \"" + outputDataFilePath + "\" not found.";
+
+            return {
+                inputDataFilePath: inputDataFilePath,
+                outputDataFilePath: outputDataFilePath
+            }
+        });
+
+        if (testCases.length === 0)
+            logger.logWarningLine("No test case specified!");
+
+        return testCases;
+    }
+
+    /**
+     * @param {string} inputDataDir
+     * @return {[TestCase]}
+     * @private
+     */
+    _findTestCasesInTestDir(inputDataDir) {
         const testCasesFound = [];
-        // Look for input/output files
+
         fs.readdirSync(inputDataDir).forEach((fileName) => {
             const match = fileName.match(/^(.*)input(.*)$/);
             if (match) {
@@ -95,14 +152,11 @@ class TestRunnerBase {
             }
         });
 
-        if (testCasesFound.length == 0)
+        if (testCasesFound.length === 0)
             logger.logWarningLine("No test case found!");
 
-        // Run all test cases
-        testCasesFound.forEach(testCase => {
-            this.runOne(srcCodeFilePath, testCase.inputDataFilePath, testCase.outputDataFilePath);
-        })
-    };
+        return testCasesFound;
+    }
 
     /**
      * Force the loading of a node module even if it was previously loaded
