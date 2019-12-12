@@ -1,3 +1,2 @@
-.idea/
-data/
-!**/archives/**/data/
+.idea/*
+!.idea/runConfigurations/
