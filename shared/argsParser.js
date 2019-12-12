@@ -1,4 +1,6 @@
 /**
+ * Generic command line arguments parser
+ *
  * @param {[string]} args
  * @param {Object.<string, {"type":string, mandatory:boolean}>} model
  * @return {{}}
@@ -42,6 +44,40 @@ function parseArgs(args, model) {
     return argsObj;
 }
 
+
+/**
+ * @returns {{exerciseDir: string,explicitTestCases: [ExplicitTestCase]}}
+ */
+function parseTestArgs() {
+    const parsedArgs = parseArgs(process.argv.slice(2), {
+        "exerciseDir": {type: "string", mandatory: true},
+        "testCases": {type: "array", mandatory: false}
+    });
+
+    /**
+     * @param {[string]} testCases
+     * @return {[ExplicitTestCase]}
+     */
+    function parseTestCases(testCases) {
+        if (testCases && testCases.length > 0) {
+            return parsedArgs.testCases.map(testCase => {
+                const [inputFileName, outputFileName] = testCase.split(":", 2);
+                return {
+                    inputFileName: inputFileName,
+                    outputFileName: outputFileName || null
+                }
+            });
+        }
+        return null;
+    }
+
+    return {
+        exerciseDir: parsedArgs.exerciseDir,
+        explicitTestCases: parseTestCases(parsedArgs.testCases)
+    }
+}
+
+
 module.exports = {
-    parse: parseArgs
+    parseTestArgs: parseTestArgs
 };

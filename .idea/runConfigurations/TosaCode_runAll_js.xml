@@ -1,0 +1,5 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="TosaCode_runAll.js" type="NodeJSConfigurationType" application-parameters="--exerciseDir Exercise_Demo" path-to-js-file="../run.js" working-dir="$PROJECT_DIR$/TosaCode/exercises/">
+    <method v="2" />
+  </configuration>
+</component>

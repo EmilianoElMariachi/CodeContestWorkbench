@@ -1,5 +1,9 @@
 ## String
 
+### String interpolation
+    let age = 15;
+    console.log(`I am ${age} years old.`)
+
 ### Convert a string to number (the Unary operator)
 
     +"5647" => 5647

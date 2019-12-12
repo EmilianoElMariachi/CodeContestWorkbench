@@ -83,16 +83,19 @@ class TestRunnerBase {
     /**
      * Run all tests found in the specified directory.
      *
-     * @param {string} testDir
+     * @param {string} exerciseRootDir
      * @param {[ExplicitTestCase]} [explicitTestCases]
      */
-    runAll(testDir, explicitTestCases) {
-        const srcCodeFilePath = path.join(testDir, "code.js");
-        const inputDataDir = path.join(testDir, "data");
+    runAll(exerciseRootDir, explicitTestCases) {
+        if (!fs.existsSync(exerciseRootDir))
+            throw `Exercise directory "${exerciseRootDir}" not found.`;
+
+        const srcCodeFilePath = path.join(exerciseRootDir, "code.js");
+        const inputDataDir = path.join(exerciseRootDir, "data");
 
         const testCases = explicitTestCases ?
             this._toFullPathTestCases(inputDataDir, explicitTestCases) :
-            this._findTestCasesInTestDir(inputDataDir);
+            this._findTestCasesInDataDir(inputDataDir);
 
         // Run all test cases
         testCases.forEach(testCase => {
@@ -133,7 +136,7 @@ class TestRunnerBase {
      * @return {[TestCase]}
      * @private
      */
-    _findTestCasesInTestDir(inputDataDir) {
+    _findTestCasesInDataDir(inputDataDir) {
         const testCasesFound = [];
 
         fs.readdirSync(inputDataDir).forEach((fileName) => {

@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="CodingGame_runAll.js" type="NodeJSConfigurationType" application-parameters="--testDir Trapping_Rain_Water --testCases" path-to-js-file="$PROJECT_DIR$/CodingGame/run.js" working-dir="$PROJECT_DIR$/CodingGame/exercises/">
+  <configuration default="false" name="CodingGame_runAll.js" type="NodeJSConfigurationType" application-parameters="--exerciseDir Trapping_Rain_Water --testCases" path-to-js-file="../run.js" working-dir="$PROJECT_DIR$/CodingGame/exercises/">
     <method v="2" />
   </configuration>
 </component>
