@@ -2,6 +2,9 @@ const heights = readline().split(" ").map(value => parseFloat(value));
 
 function computeLiters(heights) {
 
+    if (heights.length < 3)
+        return 0;
+
     function computeLitersInRange(indexA, indexB) {
         const thd = Math.min(heights[indexA], heights[indexB]);
         let liters = 0;
@@ -11,20 +14,35 @@ function computeLiters(heights) {
         return liters;
     }
 
-
-    let heightRefIndex = 0;
-    let i = heightRefIndex;
     let result = 0;
-    while (++i < heights.length) {
 
-        if (heights[i] >= heights[heightRefIndex] || (heightRefIndex < heights.length - 1 && heights[i] > heights[heightRefIndex + 1]) && i !== heightRefIndex + 1) {
-            result += computeLitersInRange(heightRefIndex, i);
-            heightRefIndex = i;
-        } else if (i >= (heights.length - 1)) {
-            heightRefIndex++;
-            i = heightRefIndex;
+    mainLoop:
+        for (let i = 0; i < heights.length - 1; i++) {
+
+            if (heights[i + 1] >= heights[i]) // Next is increasing (can't be the beginning of a hole)
+                continue;
+
+            let maxTmp;
+            let maxIndex;
+            for (let j = i + 2; j < heights.length; j++) {
+                if (heights[j] >= heights[i]) {
+                    result += computeLitersInRange(i, j);
+                    i = j - 1;
+                    continue mainLoop;
+                }
+
+                if (heights[j] > heights[i + 1] && (maxTmp === undefined || heights[j] > maxTmp)) {
+                    maxTmp = heights[j];
+                    maxIndex = j;
+                }
+            }
+
+            if (maxTmp !== undefined) {
+                result += computeLitersInRange(i, maxIndex);
+                i = maxIndex - 1;
+            }
+
         }
-    }
 
     return result;
 }
